@@ -28,6 +28,7 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
      *
      * @param remoteMessage Object representing the message received from Firebase Cloud Messaging.
      */
+    // [START receive_message]
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // [START_EXCLUDE]
@@ -42,9 +43,11 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
 
         // TODO(developer): Handle FCM messages here.
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
+
         String title;
         String text;
         String id;
+
         if (remoteMessage.getNotification() != null) {
             title = remoteMessage.getNotification().getTitle();
             text = remoteMessage.getNotification().getBody();
@@ -55,7 +58,7 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
             id = remoteMessage.getData().get("id");
         }
 
-        if(TextUtils.isEmpty(id)){
+        if (TextUtils.isEmpty(id)){
             Random rand = new Random();
             int  n = rand.nextInt(50) + 1;
             id = Integer.toString(n);
@@ -66,49 +69,50 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Notification Message Title: " + title);
         Log.d(TAG, "Notification Message Body/Text: " + text);
 
-        // TODO: Add option to developer to configure if show notification when app on foreground
-        if (!TextUtils.isEmpty(text) || !TextUtils.isEmpty(title) || (!remoteMessage.getData().isEmpty())) {
-            boolean showNotification = (FirebasePlugin.inBackground() || !FirebasePlugin.hasNotificationsCallback()) && (!TextUtils.isEmpty(text) || !TextUtils.isEmpty(title));
-            sendNotification(id, title, text, remoteMessage.getData(), showNotification);
+        sendNotificationPlugin(remoteMessage.getData());
+
+        if ((!TextUtils.isEmpty(text) || !TextUtils.isEmpty(title)) && (FirebasePlugin.inBackground() || !FirebasePlugin.hasNotificationsCallback())) {
+            sendNotification(id, title, text, remoteMessage.getData());
         }
     }
 
-    private void sendNotification(String id, String title, String messageBody, Map<String, String> data, boolean showNotification) {
+    private void sendNotification(String id, String title, String messageBody, Map<String, String> data) {
         Bundle bundle = new Bundle();
         for (String key : data.keySet()) {
             bundle.putString(key, data.get(key));
         }
-        if (showNotification) {
-            Intent intent = new Intent(this, OnNotificationOpenReceiver.class);
-            intent.putExtras(bundle);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, id.hashCode(), intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT);
 
-            Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                    .setContentTitle(title)
-                    .setContentText(messageBody)
-                    .setStyle(new NotificationCompat.BigTextStyle().bigText(messageBody))
-                    .setAutoCancel(true)
-                    .setSound(defaultSoundUri)
-                    .setContentIntent(pendingIntent);
+        Intent intent = new Intent(this, OnNotificationOpenReceiver.class);
+        intent.putExtras(bundle);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-            int resID = getResources().getIdentifier("notification_icon", "drawable", getPackageName());
-            if (resID != 0) {
-                notificationBuilder.setSmallIcon(resID);
-            } else {
-                notificationBuilder.setSmallIcon(getApplicationInfo().icon);
-            }
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+            .setContentTitle(title)
+            .setContentText(messageBody)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(messageBody))
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setContentIntent(pendingIntent);
 
-            NotificationManager notificationManager =
-                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-            notificationManager.notify(id.hashCode(), notificationBuilder.build());
+        int resID = getResources().getIdentifier("silhouette", "drawable", getPackageName());
+        if (resID != 0) {
+            notificationBuilder.setSmallIcon(resID);
         } else {
-            bundle.putBoolean("tap", false);
-            FirebasePlugin.sendNotification(bundle);
+            notificationBuilder.setSmallIcon(getApplicationInfo().icon);
         }
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        notificationManager.notify(id.hashCode(), notificationBuilder.build());
     }
 
-
+    private void sendNotificationPlugin(Map<String, String> data) {
+        Bundle bundle = new Bundle();
+        for (String key : data.keySet()) {
+            bundle.putString(key, data.get(key));
+        }
+        bundle.putBoolean("tap", false);
+        FirebasePlugin.sendNotification(bundle);
+    }
 }

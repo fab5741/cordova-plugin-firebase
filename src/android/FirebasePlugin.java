@@ -141,6 +141,7 @@ public class FirebasePlugin extends CordovaPlugin {
     @Override
     public void onResume(boolean multitasking) {
         FirebasePlugin.inBackground = false;
+        FirebasePlugin.tryToSendNotificationStack();
     }
 
     @Override
@@ -151,12 +152,7 @@ public class FirebasePlugin extends CordovaPlugin {
 
     private void onNotificationOpen(final CallbackContext callbackContext) {
         FirebasePlugin.notificationCallbackContext = callbackContext;
-        if (FirebasePlugin.notificationStack != null) {
-            for (Bundle bundle : FirebasePlugin.notificationStack) {
-                FirebasePlugin.sendNotification(bundle);
-            }
-            FirebasePlugin.notificationStack.clear();
-        }
+        FirebasePlugin.tryToSendNotificationStack();
     }
 
     private void onTokenRefresh(final CallbackContext callbackContext) {
@@ -177,8 +173,17 @@ public class FirebasePlugin extends CordovaPlugin {
         });
     }
 
+    public static void tryToSendNotificationStack() {
+        if (!FirebasePlugin.inBackground() && FirebasePlugin.hasNotificationsCallback() && FirebasePlugin.notificationStack != null) {
+            for (Bundle bundle : FirebasePlugin.notificationStack) {
+                FirebasePlugin.sendNotification(bundle);
+            }
+            FirebasePlugin.notificationStack.clear();
+        }
+    }
+
     public static void sendNotification(Bundle bundle) {
-        if(!FirebasePlugin.hasNotificationsCallback()) {
+        if(!FirebasePlugin.hasNotificationsCallback() || FirebasePlugin.inBackground()) {
             if (FirebasePlugin.notificationStack == null) {
                 FirebasePlugin.notificationStack = new ArrayList<Bundle>();
             }
@@ -203,6 +208,22 @@ public class FirebasePlugin extends CordovaPlugin {
             callbackContext.sendPluginResult(pluginresult);
         }
     }
+
+    /*public static void sendLog(String log) {
+        if(FirebasePlugin.hasNotificationsCallback()) {
+            final CallbackContext callbackContext = FirebasePlugin.notificationCallbackContext;
+            JSONObject json = new JSONObject();
+            try {
+                json.put("content", log);
+            } catch (JSONException e) {
+                callbackContext.error(e.getMessage());
+                return;
+            }
+            PluginResult pluginresult = new PluginResult(PluginResult.Status.OK, json);
+            pluginresult.setKeepCallback(true);
+            callbackContext.sendPluginResult(pluginresult);
+        }
+    }*/
 
     public static void sendToken(String token) {
         if(FirebasePlugin.tokenRefreshCallbackContext == null) {

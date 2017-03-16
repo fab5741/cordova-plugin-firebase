@@ -43,6 +43,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 				</intent-filter>
 			</service>
 			<receiver android:name="org.apache.cordova.firebase.OnNotificationOpenReceiver"></receiver>
+			<meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/silhouette" />
 		</config-file>
 		<source-file src="src/android/google-services.json" target-dir="." />
 		<source-file src="src/android/FirebasePlugin.java" target-dir="src/org/apache/cordova/firebase" />
