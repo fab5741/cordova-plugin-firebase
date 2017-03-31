@@ -105,7 +105,7 @@
 
     // Add tap field
     NSDictionary *mutableUserInfo = [userInfo mutableCopy];
-    [mutableUserInfo setValue:self.applicationInBackground forKey:@"tap"];
+    [mutableUserInfo setValue:@(NO) forKey:@"tap"];
 
     // Print full message.
     NSLog(@"application-1: %@", userInfo);
@@ -122,7 +122,7 @@
 
     // Add tap field
     NSDictionary *mutableUserInfo = [userInfo mutableCopy];
-    [mutableUserInfo setValue:self.applicationInBackground forKey:@"tap"];
+    [mutableUserInfo setValue:@(NO) forKey:@"tap"];
 
     // Print full message.
     NSLog(@"application-2: %@", userInfo);
@@ -145,7 +145,7 @@
 
     // Add tap field
     NSDictionary *mutableUserInfo = [notification.request.content.userInfo mutableCopy];
-    [mutableUserInfo setValue:self.applicationInBackground forKey:@"tap"];
+    [mutableUserInfo setValue:@(NO) forKey:@"tap"];
 
     // Pring full message.
     NSLog(@"userNotificationCenter-1:%@", mutableUserInfo);
@@ -163,7 +163,7 @@
 
     // Add tap field
     NSDictionary *mutableUserInfo = [response.notification.request.content.userInfo mutableCopy];
-    [mutableUserInfo setValue:self.applicationInBackground forKey:@"tap"];
+    [mutableUserInfo setValue:@(YES) forKey:@"tap"];
 
     // Pring full message.
     NSLog(@"userNotificationCenter-2:%@", mutableUserInfo);
@@ -183,7 +183,7 @@
 - (void)applicationReceivedRemoteMessage:(FIRMessagingRemoteMessage *)remoteMessage {
     // Add tap field
     NSDictionary *mutableUserInfo = [remoteMessage.appData mutableCopy];
-    [mutableUserInfo setValue:self.applicationInBackground forKey:@"tap"];
+    [mutableUserInfo setValue:@(NO) forKey:@"tap"];
 
     // Pring full message.
     NSLog(@"applicationReceivedRemoteMessage-1:%@", mutableUserInfo);
