@@ -69,6 +69,13 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Notification Message Title: " + title);
         Log.d(TAG, "Notification Message Body/Text: " + text);
 
+        String removeTag = remoteMessage.getData().get("removeTag");
+        if (!TextUtils.isEmpty(removeTag)) {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            Log.d(TAG, "Notification Message Remove TAG: " + removeTag);
+            notificationManager.cancel(removeTag, 0);
+        }
+
         sendNotificationPlugin(remoteMessage.getData());
 
         if ((!TextUtils.isEmpty(text) || !TextUtils.isEmpty(title)) && (FirebasePlugin.inBackground() || !FirebasePlugin.hasNotificationsCallback())) {
