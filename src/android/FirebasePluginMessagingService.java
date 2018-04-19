@@ -90,8 +90,8 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Notification Message Title: " + title);
         Log.d(TAG, "Notification Message Body/Text: " + text);
 
-        title = decrypt( 'SECURE KEY', title);
-        text = decrypt( 'SECURE KEY', text);
+        title = decrypt( "SECURE KEY", title);
+        text = decrypt( "SECURE KEY", text);
 
         Log.d(TAG, "From: " + remoteMessage.getFrom());
         Log.d(TAG, "Notification Message id: " + id);
