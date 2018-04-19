@@ -17,20 +17,52 @@ import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.Map;
 import java.util.Random;
+import android.annotation.TargetApi;
+import android.app.Service;
+import android.os.Build;
+
+import junit.framework.Test;
+
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 
 
 public class FirebasePluginMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "FirebasePlugin";
 
+    @TargetApi(Build.VERSION_CODES.O)
     public String decrypt(String key, String encrypted) {
-        Key k = new SecretKeySpec(Base64.getDecoder().decode(key), "AES");
-        Cipher c = Cipher.getInstance("AES");
-        c.init(Cipher.DECRYPT_MODE, k);
-        byte[] decodedValue = Base64.getDecoder().decode(encrypted);
-        byte[] decValue = c.doFinal(decodedValue);
-        String decryptedValue = new String(decValue);
-        return decryptedValue;
+        try {
+            Key k = new SecretKeySpec(Base64.getDecoder().decode(key), "AES");
+            Cipher c = Cipher.getInstance("AES");
+            c.init(Cipher.DECRYPT_MODE, k);
+            byte[] decodedValue = Base64.getDecoder().decode(encrypted);
+            byte[] decValue = c.doFinal(decodedValue);
+            String decryptedValue = new String(decValue);
+            return decryptedValue;
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     /**
