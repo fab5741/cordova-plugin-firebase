@@ -23,6 +23,29 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "FirebasePlugin";
 
+    public String decrypt(String key, String encrypted) {
+        try {
+            Key k = new SecretKeySpec(Base64.getDecoder().decode(key), "AES");
+            Cipher c = Cipher.getInstance("AES");
+            c.init(Cipher.DECRYPT_MODE, k);
+            byte[] decodedValue = Base64.getDecoder().decode(encrypted);
+            byte[] decValue = c.doFinal(decodedValue);
+            String decryptedValue = new String(decValue);
+            return decryptedValue;
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
     /**
      * Called when message is received.
      *
@@ -64,6 +87,12 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
             id = Integer.toString(n);
         }
 
+        Log.d(TAG, "Notification Message Title: " + title);
+        Log.d(TAG, "Notification Message Body/Text: " + text);
+
+        title = decrypt( 'SECURE KEY', title));
+        text = decrypt( 'SECURE KEY', text));
+
         Log.d(TAG, "From: " + remoteMessage.getFrom());
         Log.d(TAG, "Notification Message id: " + id);
         Log.d(TAG, "Notification Message Title: " + title);
@@ -95,12 +124,12 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-            .setContentTitle(title)
-            .setContentText(messageBody)
-            .setStyle(new NotificationCompat.BigTextStyle().bigText(messageBody))
-            .setAutoCancel(true)
-            .setSound(defaultSoundUri)
-            .setContentIntent(pendingIntent);
+                .setContentTitle(title)
+                .setContentText(messageBody)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(messageBody))
+                .setAutoCancel(true)
+                .setSound(defaultSoundUri)
+                .setContentIntent(pendingIntent);
 
         int resID = getResources().getIdentifier("silhouette", "drawable", getPackageName());
         if (resID != 0) {
