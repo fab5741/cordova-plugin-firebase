@@ -24,26 +24,13 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FirebasePlugin";
 
     public String decrypt(String key, String encrypted) {
-        try {
-            Key k = new SecretKeySpec(Base64.getDecoder().decode(key), "AES");
-            Cipher c = Cipher.getInstance("AES");
-            c.init(Cipher.DECRYPT_MODE, k);
-            byte[] decodedValue = Base64.getDecoder().decode(encrypted);
-            byte[] decValue = c.doFinal(decodedValue);
-            String decryptedValue = new String(decValue);
-            return decryptedValue;
-        } catch (IllegalBlockSizeException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BadPaddingException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeyException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchPaddingException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+        Key k = new SecretKeySpec(Base64.getDecoder().decode(key), "AES");
+        Cipher c = Cipher.getInstance("AES");
+        c.init(Cipher.DECRYPT_MODE, k);
+        byte[] decodedValue = Base64.getDecoder().decode(encrypted);
+        byte[] decValue = c.doFinal(decodedValue);
+        String decryptedValue = new String(decValue);
+        return decryptedValue;
     }
 
     /**
