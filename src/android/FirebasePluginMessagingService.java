@@ -35,34 +35,32 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.MessageDigest;
 
 
 public class FirebasePluginMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "FirebasePlugin";
 
-    @TargetApi(Build.VERSION_CODES.O)
-    public String decrypt(String key, String encrypted) {
-        try {
-            Key k = new SecretKeySpec(Base64.getDecoder().decode(key), "AES");
-            Cipher c = Cipher.getInstance("AES");
-            c.init(Cipher.DECRYPT_MODE, k);
-            byte[] decodedValue = Base64.getDecoder().decode(encrypted);
-            byte[] decValue = c.doFinal(decodedValue);
-            String decryptedValue = new String(decValue);
-            return decryptedValue;
-        } catch (IllegalBlockSizeException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BadPaddingException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeyException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchPaddingException ex) {
-            Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+    private static String decrypt(String seed, String encrypted) throws Exception {
+        byte[] keyb = seed.getBytes("UTF-8");
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        byte[] thedigest = md.digest(keyb);
+        SecretKeySpec skey = new SecretKeySpec(thedigest, "AES");
+        Cipher dcipher = Cipher.getInstance("AES");
+        dcipher.init(Cipher.DECRYPT_MODE, skey);
+
+        byte[] clearbyte = dcipher.doFinal(toByte(encrypted));
+        return new String(clearbyte);
+    }
+
+    private static byte[] toByte(String hexString) {
+        int len = hexString.length()/2;
+        byte[] result = new byte[len];
+        for (int i = 0; i < len; i++) {
+            result[i] = Integer.valueOf(hexString.substring(2*i, 2*i+2), 16).byteValue();
         }
-        return null;
+        return result;
     }
 
     /**
@@ -106,11 +104,8 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
             id = Integer.toString(n);
         }
 
-        Log.d(TAG, "Notification Message Title: " + title);
-        Log.d(TAG, "Notification Message Body/Text: " + text);
-
-        title = decrypt( "SECURE KEY", title);
-        text = decrypt( "SECURE KEY", text);
+        title = decrypt( "Pändas are the bests !", title);
+        text = decrypt( "Pändas are the bests !", text);
 
         Log.d(TAG, "From: " + remoteMessage.getFrom());
         Log.d(TAG, "Notification Message id: " + id);
