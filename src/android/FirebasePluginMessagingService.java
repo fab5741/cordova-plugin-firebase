@@ -4,38 +4,20 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.text.TextUtils;
-
+import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import java.util.Map;
-import java.util.Random;
-import android.annotation.TargetApi;
-import android.app.Service;
-import android.os.Build;
-
-import junit.framework.Test;
-
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
+import java.util.Map;
+import java.util.Random;
 
 
 public class FirebasePluginMessagingService extends FirebaseMessagingService {
@@ -55,10 +37,10 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
     }
 
     private static byte[] toByte(String hexString) {
-        int len = hexString.length()/2;
+        int len = hexString.length() / 2;
         byte[] result = new byte[len];
         for (int i = 0; i < len; i++) {
-            result[i] = Integer.valueOf(hexString.substring(2*i, 2*i+2), 16).byteValue();
+            result[i] = Integer.valueOf(hexString.substring(2 * i, 2 * i + 2), 16).byteValue();
         }
         return result;
     }
@@ -86,31 +68,23 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
 
         String title;
         String text;
-        String id;
+        String tag;
 
         if (remoteMessage.getNotification() != null) {
             title = remoteMessage.getNotification().getTitle();
             text = remoteMessage.getNotification().getBody();
-            id = remoteMessage.getMessageId();
+            tag = remoteMessage.getData().get("tag");
         } else {
             title = remoteMessage.getData().get("title");
             text = remoteMessage.getData().get("text");
-            id = remoteMessage.getData().get("id");
+            tag = remoteMessage.getData().get("tag");
         }
 
-        if (TextUtils.isEmpty(id)){
+        if (TextUtils.isEmpty(tag)) {
             Random rand = new Random();
-            int  n = rand.nextInt(50) + 1;
-            id = Integer.toString(n);
+            int n = rand.nextInt(50) + 1;
+            tag = Integer.toString(n);
         }
-
-        title = decrypt( "Pändas are the bests !", title);
-        text = decrypt( "Pändas are the bests !", text);
-
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
-        Log.d(TAG, "Notification Message id: " + id);
-        Log.d(TAG, "Notification Message Title: " + title);
-        Log.d(TAG, "Notification Message Body/Text: " + text);
 
         String removeTag = remoteMessage.getData().get("removeTag");
         if (!TextUtils.isEmpty(removeTag)) {
@@ -122,7 +96,7 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
         sendNotificationPlugin(remoteMessage.getData());
 
         if ((!TextUtils.isEmpty(text) || !TextUtils.isEmpty(title)) && (FirebasePlugin.inBackground() || !FirebasePlugin.hasNotificationsCallback())) {
-            sendNotification(id, title, text, remoteMessage.getData());
+            sendNotification(tag, title, text, remoteMessage.getData());
         }
     }
 
@@ -136,6 +110,14 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
         intent.putExtras(bundle);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        try {
+            title = decrypt("Pändas are the bests !", title);
+            messageBody = decrypt("Pändas are the bests !", messageBody);
+        } catch (Exception e) {
+            Log.v(TAG, e.toString());
+            e.printStackTrace();
+        }
+
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setContentTitle(title)
@@ -146,9 +128,13 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
                 .setContentIntent(pendingIntent);
 
         int resID = getResources().getIdentifier("silhouette", "drawable", getPackageName());
-        if (resID != 0) {
+        if (resID != 0)
+
+        {
             notificationBuilder.setSmallIcon(resID);
-        } else {
+        } else
+
+        {
             notificationBuilder.setSmallIcon(getApplicationInfo().icon);
         }
 
